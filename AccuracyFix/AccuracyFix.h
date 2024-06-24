@@ -7,7 +7,6 @@ public:
 
 	void CmdEnd(const edict_t* pEdict);
 	void TraceLine(const float* vStart, const float* vEnd, int fNoMonsters, edict_t* pentToSkip, TraceResult* ptr);
-    void PostThink(CBasePlayer* Player);
 
 private:
 	cvar_t* m_af_distance_all;
