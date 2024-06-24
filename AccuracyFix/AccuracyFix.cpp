@@ -57,48 +57,42 @@ void CAccuracyFix::TraceLine(const float* vStart, const float* vEnd, int fNoMons
 			if (EntityIndex > 0 && EntityIndex <= gpGlobals->maxClients)
 			{
 				auto Player = UTIL_PlayerByIndexSafe(EntityIndex);
-
-				if (Player)
+				
+				if (Player && Player->IsAlive() && Player->m_pActiveItem)
 				{
-					if (Player->IsAlive())
+					if ((Player->m_pActiveItem->iItemSlot() == PRIMARY_WEAPON_SLOT) || (Player->m_pActiveItem->iItemSlot() == PISTOL_SLOT))
 					{
-						if (Player->m_pActiveItem)
+						auto DistanceLimit = this->m_af_distance[Player->m_pActiveItem->m_iId]->value;
+
+						if (this->m_af_distance_all->value > 0)
 						{
-							if ((Player->m_pActiveItem->iItemSlot() == PRIMARY_WEAPON_SLOT) || (Player->m_pActiveItem->iItemSlot() == PISTOL_SLOT))
+							DistanceLimit = this->m_af_distance_all->value;
+						}
+
+						if (DistanceLimit > 0.0f)
+						{
+							if (Player->pev->flags & FL_ONGROUND)
 							{
-								auto DistanceLimit = this->m_af_distance[Player->m_pActiveItem->m_iId]->value;
-
-								if (this->m_af_distance_all->value > 0)
+								auto trResult = gAccuracyUtil.GetUserAiming(pentToSkip, DistanceLimit);
+	
+								if (!FNullEnt(trResult.pHit))
 								{
-									DistanceLimit = this->m_af_distance_all->value;
-								}
-
-								if (DistanceLimit > 0.0f)
-								{
-									if (Player->pev->flags & FL_ONGROUND)
+									auto TargetIndex = ENTINDEX(trResult.pHit);
+	
+									if (TargetIndex > 0 && TargetIndex <= gpGlobals->maxClients)
 									{
-										auto trResult = gAccuracyUtil.GetUserAiming(pentToSkip, DistanceLimit);
+										auto fwdVelocity = this->m_af_accuracy[Player->m_pActiveItem->m_iId]->value;
 	
-										if (!FNullEnt(trResult.pHit))
+										if (this->m_af_accuracy_all->value > 0.0f)
 										{
-											auto TargetIndex = ENTINDEX(trResult.pHit);
-	
-											if (TargetIndex > 0 && TargetIndex <= gpGlobals->maxClients)
-											{
-												auto fwdVelocity = this->m_af_accuracy[Player->m_pActiveItem->m_iId]->value;
-	
-												if (this->m_af_accuracy_all->value > 0.0f)
-												{
-													fwdVelocity = this->m_af_accuracy_all->value;
-												}
-	
-												g_engfuncs.pfnMakeVectors(pentToSkip->v.v_angle);
-	
-												auto vEndRes = (Vector)vStart + gpGlobals->v_forward * fwdVelocity;
-	
-												g_engfuncs.pfnTraceLine(vStart, vEndRes, fNoMonsters, pentToSkip, ptr);
-											}
+											fwdVelocity = this->m_af_accuracy_all->value;
 										}
+	
+										g_engfuncs.pfnMakeVectors(pentToSkip->v.v_angle);
+	
+										auto vEndRes = (Vector)vStart + gpGlobals->v_forward * fwdVelocity;
+	
+										g_engfuncs.pfnTraceLine(vStart, vEndRes, fNoMonsters, pentToSkip, ptr);
 									}
 								}
 							}
