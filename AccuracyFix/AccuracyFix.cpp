@@ -71,7 +71,9 @@ void CAccuracyFix::TraceLine(const float* vStart, const float* vEnd, int fNoMons
 
 						if (DistanceLimit > 0.0f)
 						{
-							if (Player->pev->flags & FL_ONGROUND)
+							bool IsOnGround = (Player->pev->flags & FL_ONGROUND) != 0;
+							
+							if (IsOnGround)
 							{
 								auto trResult = gAccuracyUtil.GetUserAiming(pentToSkip, DistanceLimit);
 	
